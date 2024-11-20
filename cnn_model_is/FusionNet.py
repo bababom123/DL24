@@ -35,22 +35,22 @@ class FusionGenerator(nn.Module):
 
         # encoder
 
-        self.down_1 = Conv_residual_conv(self.in_dim, self.out_dim, act_fn)
-        self.pool_1 = maxpool()
-        self.down_2 = Conv_residual_conv(self.out_dim, self.out_dim * 2, act_fn)
-        self.pool_2 = maxpool()
-        self.down_3 = Conv_residual_conv(self.out_dim * 2, self.out_dim * 4, act_fn)
-        self.pool_3 = maxpool()
-        self.down_4 = Conv_residual_conv(self.out_dim * 4, self.out_dim * 8, act_fn)
-        self.pool_4 = maxpool()
+        self.down_1 = Conv_residual_conv(self.in_dim, self.out_dim, act_fn) #size = i * i * c
+        self.pool_1 = maxpool() #size = i/2 * i/2 * c
+        self.down_2 = Conv_residual_conv(self.out_dim, self.out_dim * 2, act_fn) #size = i/2 * i/2 * 2c
+        self.pool_2 = maxpool() #size = i/4 * i/4 * 2c
+        self.down_3 = Conv_residual_conv(self.out_dim * 2, self.out_dim * 4, act_fn) #size = i/4 * i/4 * 4c
+        self.pool_3 = maxpool() #size = i/8 * i/8 * 4c
+        self.down_4 = Conv_residual_conv(self.out_dim * 4, self.out_dim * 8, act_fn) #size = i/8 * i/8 * 8c
+        self.pool_4 = maxpool() #size = i/16 * i/16 * 8c
 
         # bridge
 
-        self.bridge = Conv_residual_conv(self.out_dim * 8, self.out_dim * 16, act_fn)
+        self.bridge = Conv_residual_conv(self.out_dim * 8, self.out_dim * 16, act_fn) #size = i/16 * i/16 * 16c
 
         # decoder
 
-        self.deconv_1 = conv_trans_block(self.out_dim * 16, self.out_dim * 8, act_fn_2)
+        self.deconv_1 = conv_trans_block(self.out_dim * 16, self.out_dim * 8, act_fn_2) #size = i/8 * i/8 * 8c
         self.up_1 = Conv_residual_conv(self.out_dim * 8, self.out_dim * 8, act_fn_2)
         self.deconv_2 = conv_trans_block(self.out_dim * 8, self.out_dim * 4, act_fn_2)
         self.up_2 = Conv_residual_conv(self.out_dim * 4, self.out_dim * 4, act_fn_2)
@@ -75,8 +75,8 @@ class FusionGenerator(nn.Module):
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                m.weight.data.normal_(0.0, 0.02)
-                m.bias.data.fill_(0)
+                m.weight.data.normal_(0.0, 0.02) #Why?
+                m.bias.data.fill_(0) #Why?
             
             elif isinstance(m, nn.BatchNorm2d):
                 m.weight.data.normal_(1.0, 0.02)
@@ -111,6 +111,5 @@ class FusionGenerator(nn.Module):
 
         out = self.out(up_4)
         out = self.out_2(out)
-        #out = torch.clamp(out, min=-1, max=1)
 
         return out
